@@ -23,9 +23,11 @@ namespace MSHealthAPIClient
     {
         private const string Scopes = "mshealth.ReadDevices mshealth.ReadActivityHistory mshealth.ReadActivityLocation mshealth.ReadDevices mshealth.ReadProfile offline_access";
         private const string RedirectUri = "https://login.live.com/oauth20_desktop.srf";
-        private const string ClientId = "000000004815E36A";
-        private const string ClientSecret = "8jZLoepErFN5KpmcKfYfEIQIfbrdaMOI";
 
+        private static string ClientId = string.Empty;
+        private static string ClientSecret = string.Empty;
+
+        private const string ClientAppResourceName = "MSHealthClientId";
         private const string ResourceName = "MSHealthOauthToken";
         private const string RefreshResourceName = "MSHealthOauthTokenRefresh";
         private const string UserName = "User";
@@ -80,8 +82,28 @@ namespace MSHealthAPIClient
             return uri.Uri;
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            // try to get Client Id And Client Secret from the Password Vault - if no 
+            // entry found put up a dialog box to request..
+            var appCredentials = GetTokenFromVault(ClientAppResourceName);
+            if (string.IsNullOrEmpty(appCredentials.Item1))
+            {
+                // Put up a UI prompting for the app IDs...
+                var cdr = await ClientCredentialsDlg.ShowAsync();
+                if (cdr == ContentDialogResult.Primary)
+                {
+                    ClientId = ClientIdInput.Text;
+                    ClientSecret = ClientSecretInput.Text;
+
+                    AddTokenToVault(ClientAppResourceName, ClientId, ClientSecret);
+                }
+            }
+            else
+            {
+                ClientId = appCredentials.Item1;
+                ClientSecret = appCredentials.Item2;
+            }
         }
 
         private async Task<string> MakeRequestAsync(string path, string query = "")
@@ -103,7 +125,7 @@ namespace MSHealthAPIClient
             {
                 // If we are unauthorized here assume that our token may have expired and use the 
                 // refresh token to get a new one and then try the request again..
-                var currentToken = GetTokenFromVault();
+                var currentToken = GetTokenFromVault(ResourceName);
                 string rt = currentToken.Item2.Trim('"');
                 var newToken = await GetAndSecurelyStoreAuthTokensFromRefreshToken(rt);
 
@@ -118,14 +140,14 @@ namespace MSHealthAPIClient
             return resStr;
         }
 
-        private void AddTokenToVault(string token, string refresh)
+        private void AddTokenToVault(string resName, string token, string refresh)
         {
             var vault = new PasswordVault();
-            var credential = new PasswordCredential(ResourceName, refresh, token);
+            var credential = new PasswordCredential(resName, refresh, token);
             vault.Add(credential);
         }
 
-        private Tuple<string, string> GetTokenFromVault()
+        private Tuple<string, string> GetTokenFromVault(string resName)
         {
             string token = string.Empty;
             string refresh_token = string.Empty;
@@ -133,11 +155,11 @@ namespace MSHealthAPIClient
             var vault = new PasswordVault();
             try
             {
-                var credential = vault.FindAllByResource(ResourceName).FirstOrDefault();
+                var credential = vault.FindAllByResource(resName).FirstOrDefault();
                 if (credential != null)
                 {
                     refresh_token = credential.UserName;
-                    token = vault.Retrieve(ResourceName, refresh_token).Password;
+                    token = vault.Retrieve(resName, refresh_token).Password;
                 }
             }
             catch (Exception)
@@ -148,7 +170,7 @@ namespace MSHealthAPIClient
 
         private async Task<string> GetTokenAsync()
         {
-            var token = GetTokenFromVault();
+            var token = GetTokenFromVault(ResourceName);
             if (!string.IsNullOrEmpty(token.Item1))
                 return token.Item1;
 
@@ -165,19 +187,6 @@ namespace MSHealthAPIClient
             var code = respUri.Query.Split('=')[1];
 
             var authToken = await GetAndSecurelyStoreAuthTokensFromAuthCode(code);
-
-            //var tokenUri = CreateOAuthTokenRequestUri(code);
-
-            //var http = new HttpClient();
-            //var resp = await http.GetAsync(tokenUri);
-            //var result = await resp.Content.ReadAsStringAsync();
-
-            //var value = JsonValue.Parse(result).GetObject();
-            //var authToken = value.GetNamedValue("access_token").ToString();
-            //var refreshToken = value.GetNamedValue("refresh_token").ToString();
-
-            //AddTokenToVault(authToken, refreshToken);
-
             return authToken;
         }
 
@@ -193,7 +202,7 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             var refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault(authToken, refreshToken);
+            AddTokenToVault(ResourceName, authToken, refreshToken);
             return authToken;
         }
 
@@ -209,7 +218,7 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault(authToken, refreshToken);
+            AddTokenToVault(ResourceName, authToken, refreshToken);
             return authToken;
         }
 
@@ -288,6 +297,16 @@ namespace MSHealthAPIClient
         private async void RunActivityClick(object sender, RoutedEventArgs e)
         {
             TextDisplay.Text = await GetActivity("Run");
+        }
+
+        private void ClientSecretChanged(object sender, TextChangedEventArgs e)
+        {
+            
+        }
+
+        private void ClientIdChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }
