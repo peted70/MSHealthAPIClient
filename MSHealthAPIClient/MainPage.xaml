@@ -1,0 +1,37 @@
+﻿<Page
+    x:Class="MSHealthAPIClient.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MSHealthAPIClient"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Name="profile"  Label="Profile" Icon="Account" Click="profile_Click"></AppBarButton>
+            <AppBarButton Name="devices" Label="Devices" Icon="Emoji2"  Click="devices_Click"></AppBarButton>
+            <AppBarButton  Name="summaries" Label="Summaries" Icon="Comment"  Click="summaries_Click"></AppBarButton>
+            <!--Run  Sleep  FreePlay  GuidedWorkout  Bike  Golf-->
+            <AppBarButton  Name="activities" Label="Activities">
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Run" Click="RunActivityClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Sleep" Click="SleepActivityClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Free Play" Click="FreePlayActivityClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Guided Workout" Click="GuidedWorkoutActivityClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Bike" Click="BikeActivityClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Golf" Click="GolfActivityClick"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+        </CommandBar>
+    </Page.BottomAppBar>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock FontSize="32" Text="MS Health API"></TextBlock>
+        <TextBox Grid.Row="1" IsColorFontEnabled="True" PlaceholderText="JSON output..." TextWrapping="Wrap" x:Name="TextDisplay"/>
+    </Grid>
+</Page>
