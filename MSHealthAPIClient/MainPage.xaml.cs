@@ -86,7 +86,7 @@ namespace MSHealthAPIClient
         {
             // try to get Client Id And Client Secret from the Password Vault - if no 
             // entry found put up a dialog box to request..
-            var appCredentials = GetTokenFromVault(ClientAppResourceName);
+            var appCredentials = GetTokenFromVault2(ClientAppResourceName);
             if (string.IsNullOrEmpty(appCredentials.Item1))
             {
                 // Put up a UI prompting for the app IDs...
@@ -96,7 +96,7 @@ namespace MSHealthAPIClient
                     ClientId = ClientIdInput.Text;
                     ClientSecret = ClientSecretInput.Text;
 
-                    AddTokenToVault(ClientAppResourceName, ClientId, ClientSecret);
+                    AddTokenToVault2(ClientAppResourceName, ClientId, ClientSecret);
                 }
             }
             else
@@ -125,7 +125,7 @@ namespace MSHealthAPIClient
             {
                 // If we are unauthorized here assume that our token may have expired and use the 
                 // refresh token to get a new one and then try the request again..
-                var currentToken = GetTokenFromVault(ResourceName);
+                var currentToken = GetTokenFromVault2(RefreshResourceName);
                 string rt = currentToken.Item2.Trim('"');
                 var newToken = await GetAndSecurelyStoreAuthTokensFromRefreshToken(rt);
 
@@ -145,6 +145,34 @@ namespace MSHealthAPIClient
             var vault = new PasswordVault();
             var credential = new PasswordCredential(resName, refresh, token);
             vault.Add(credential);
+        }
+
+        private void AddTokenToVault2(string resName, string userName, string token)
+        {
+            var vault = new PasswordVault();
+            var credential = new PasswordCredential(resName, userName, token);
+            vault.Add(credential);
+        }
+
+        private Tuple<string, string> GetTokenFromVault2(string resName)
+        {
+            string userName = string.Empty;
+            string password = string.Empty;
+
+            var vault = new PasswordVault();
+            try
+            {
+                var credential = vault.FindAllByResource(resName).FirstOrDefault();
+                if (credential != null)
+                {
+                    userName = credential.UserName;
+                    password = vault.Retrieve(resName, userName).Password;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return new Tuple<string, string>(userName, password);
         }
 
         private Tuple<string, string> GetTokenFromVault(string resName)
@@ -170,9 +198,9 @@ namespace MSHealthAPIClient
 
         private async Task<string> GetTokenAsync()
         {
-            var token = GetTokenFromVault(ResourceName);
-            if (!string.IsNullOrEmpty(token.Item1))
-                return token.Item1;
+            var token = GetTokenFromVault2(ResourceName);
+            if (!string.IsNullOrEmpty(token.Item2))
+                return token.Item2;
 
             // want to get SSO behaviour here but if I use the app callback URI it uses SSO but WAB never
             // returns
@@ -202,7 +230,9 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             var refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault(ResourceName, authToken, refreshToken);
+            AddTokenToVault2(ResourceName, UserName, authToken);
+            AddTokenToVault2(RefreshResourceName, UserName, refreshToken);
+
             return authToken;
         }
 
@@ -218,7 +248,9 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault(ResourceName, authToken, refreshToken);
+            AddTokenToVault2(ResourceName, UserName, authToken);
+            AddTokenToVault2(RefreshResourceName, UserName, refreshToken);
+
             return authToken;
         }
 
@@ -257,7 +289,7 @@ namespace MSHealthAPIClient
                 string.Format("startTime={0}&endTime={1}&activityTypes={2}",
                 DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
                 DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                "Sleep"));
+                activity));
 
             await Task.Run(() =>
             {
