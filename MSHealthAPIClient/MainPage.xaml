@@ -8,11 +8,26 @@
     mc:Ignorable="d" x:Name="pageRoot">
     <Page.BottomAppBar>
         <CommandBar>
-            <AppBarButton Name="profile"  Label="Profile" Icon="Account" Click="profile_Click"></AppBarButton>
-            <AppBarButton Name="devices" Label="Devices" Icon="Emoji2"  Click="devices_Click"></AppBarButton>
-            <AppBarButton  Name="summaries" Label="Summaries" Icon="Comment"  Click="summaries_Click"></AppBarButton>
+            <AppBarButton Name="profile" Label="Profile" Click="profile_Click">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe136;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton Name="devices" Label="Devices" Click="devices_Click">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xec64;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton  Name="summaries" Label="Summaries" Click="summaries_Click">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe1d7;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
             <!--Run  Sleep  FreePlay  GuidedWorkout  Bike  Golf-->
             <AppBarButton  Name="activities" Label="Activities">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xe726;" />
+                </AppBarButton.Icon>
                 <AppBarButton.Flyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Run" Click="RunActivityClick"></MenuFlyoutItem>
