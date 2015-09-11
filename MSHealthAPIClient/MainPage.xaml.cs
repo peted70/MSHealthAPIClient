@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -301,16 +300,6 @@ namespace MSHealthAPIClient
         private async void RunActivityClick(object sender, RoutedEventArgs e)
         {
             TextDisplay.Text = await GetActivity("Run");
-        }
-
-        private void ClientSecretChanged(object sender, TextChangedEventArgs e)
-        {
-            
-        }
-
-        private void ClientIdChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 }
