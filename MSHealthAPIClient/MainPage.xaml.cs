@@ -86,7 +86,7 @@ namespace MSHealthAPIClient
         {
             // try to get Client Id And Client Secret from the Password Vault - if no 
             // entry found put up a dialog box to request..
-            var appCredentials = GetTokenFromVault2(ClientAppResourceName);
+            var appCredentials = GetTokenFromVault(ClientAppResourceName);
             if (string.IsNullOrEmpty(appCredentials.Item1))
             {
                 // Put up a UI prompting for the app IDs...
@@ -96,7 +96,7 @@ namespace MSHealthAPIClient
                     ClientId = ClientIdInput.Text;
                     ClientSecret = ClientSecretInput.Text;
 
-                    AddTokenToVault2(ClientAppResourceName, ClientId, ClientSecret);
+                    AddTokenToVault(ClientAppResourceName, ClientId, ClientSecret);
                 }
             }
             else
@@ -125,7 +125,7 @@ namespace MSHealthAPIClient
             {
                 // If we are unauthorized here assume that our token may have expired and use the 
                 // refresh token to get a new one and then try the request again..
-                var currentToken = GetTokenFromVault2(RefreshResourceName);
+                var currentToken = GetTokenFromVault(RefreshResourceName);
                 string rt = currentToken.Item2.Trim('"');
                 var newToken = await GetAndSecurelyStoreAuthTokensFromRefreshToken(rt);
 
@@ -140,21 +140,14 @@ namespace MSHealthAPIClient
             return resStr;
         }
 
-        private void AddTokenToVault(string resName, string token, string refresh)
-        {
-            var vault = new PasswordVault();
-            var credential = new PasswordCredential(resName, refresh, token);
-            vault.Add(credential);
-        }
-
-        private void AddTokenToVault2(string resName, string userName, string token)
+        private void AddTokenToVault(string resName, string userName, string token)
         {
             var vault = new PasswordVault();
             var credential = new PasswordCredential(resName, userName, token);
             vault.Add(credential);
         }
 
-        private Tuple<string, string> GetTokenFromVault2(string resName)
+        private Tuple<string, string> GetTokenFromVault(string resName)
         {
             string userName = string.Empty;
             string password = string.Empty;
@@ -175,30 +168,9 @@ namespace MSHealthAPIClient
             return new Tuple<string, string>(userName, password);
         }
 
-        private Tuple<string, string> GetTokenFromVault(string resName)
-        {
-            string token = string.Empty;
-            string refresh_token = string.Empty;
-
-            var vault = new PasswordVault();
-            try
-            {
-                var credential = vault.FindAllByResource(resName).FirstOrDefault();
-                if (credential != null)
-                {
-                    refresh_token = credential.UserName;
-                    token = vault.Retrieve(resName, refresh_token).Password;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return new Tuple<string, string>(token, refresh_token);
-        }
-
         private async Task<string> GetTokenAsync()
         {
-            var token = GetTokenFromVault2(ResourceName);
+            var token = GetTokenFromVault(ResourceName);
             if (!string.IsNullOrEmpty(token.Item2))
                 return token.Item2;
 
@@ -230,8 +202,8 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             var refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault2(ResourceName, UserName, authToken);
-            AddTokenToVault2(RefreshResourceName, UserName, refreshToken);
+            AddTokenToVault(ResourceName, UserName, authToken);
+            AddTokenToVault(RefreshResourceName, UserName, refreshToken);
 
             return authToken;
         }
@@ -248,8 +220,8 @@ namespace MSHealthAPIClient
             var authToken = value.GetNamedValue("access_token").ToString();
             refreshToken = value.GetNamedValue("refresh_token").ToString();
 
-            AddTokenToVault2(ResourceName, UserName, authToken);
-            AddTokenToVault2(RefreshResourceName, UserName, refreshToken);
+            AddTokenToVault(ResourceName, UserName, authToken);
+            AddTokenToVault(RefreshResourceName, UserName, refreshToken);
 
             return authToken;
         }
