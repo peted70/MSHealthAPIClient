@@ -7,11 +7,11 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="1f846bd8-4d08-46e4-aee6-28ed9cf67d6a"
+    Name="69eee614-8b24-4f6a-bca7-2e0766224a7b"
     Publisher="CN=pdaukin"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="1f846bd8-4d08-46e4-aee6-28ed9cf67d6a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="69eee614-8b24-4f6a-bca7-2e0766224a7b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>MSHealthAPIClient</DisplayName>
@@ -20,7 +20,7 @@
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10069.0" MaxVersionTested="10.0.10069.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
   </Dependencies>
 
   <Resources>
@@ -33,10 +33,11 @@
       EntryPoint="MSHealthAPIClient.App">
       <uap:VisualElements
         DisplayName="MSHealthAPIClient"
-        Square150x150Logo="Assets\Logo.png"
-        Square44x44Logo="Assets\SmallLogo.png"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
         Description="MSHealthAPIClient"
-        BackgroundColor="#464646">
+        BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
