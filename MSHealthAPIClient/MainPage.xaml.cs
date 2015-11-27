@@ -257,7 +257,7 @@ namespace MSHealthAPIClient
         private async Task<string> GetActivity(string activity)
         {
             var res = await MakeRequestAsync("me/Activities/",
-                string.Format("startTime={0}&endTime={1}&activityTypes={2}",
+                string.Format("startTime={0}&endTime={1}&activityTypes={2}&ActivityIncludes=Details",
                 DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
                 DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
                 activity));
