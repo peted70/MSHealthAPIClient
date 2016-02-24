@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Security.Authentication.Web;
 using Windows.Security.Credentials;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
@@ -183,6 +184,13 @@ namespace MSHealthAPIClient
             var ed = ar.ResponseErrorDetail;
             var rd = ar.ResponseData;
             var respUri = new Uri(rd);
+
+            // Hacky error handling
+            if (ed > 0 || respUri.Fragment.Length > 0)
+            {
+                throw new Exception(respUri.Fragment);
+            }
+
             var code = respUri.Query.Split('=')[1];
 
             var authToken = await GetAndSecurelyStoreAuthTokensFromAuthCode(code);
@@ -227,40 +235,101 @@ namespace MSHealthAPIClient
 
         private async void profile_Click(object sender, RoutedEventArgs e)
         {
-            var res = await MakeRequestAsync("me/profile");
-            // Format the JSON string
-            var obj = JsonConvert.DeserializeObject(res);
-            res = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            TextDisplay.Text = res;
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await MakeRequestAsync("me/profile");
+
+                // Format the JSON string
+                await Task.Run(() =>
+                {
+                    var obj = JsonConvert.DeserializeObject(res);
+                    res = JsonConvert.SerializeObject(obj, Formatting.Indented);
+                });
+            }
+            catch (Exception ex)
+            {
+                var md = new MessageDialog(ex.Message, "API Request Error");
+                await md.ShowAsync();
+                return;
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void devices_Click(object sender, RoutedEventArgs e)
         {
-            var res = await MakeRequestAsync("me/devices");
-            // Format the JSON string
-            var obj = JsonConvert.DeserializeObject(res);
-            res = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            TextDisplay.Text = res;
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await MakeRequestAsync("me/devices");
+                await Task.Run(() =>
+                {
+                    var obj = JsonConvert.DeserializeObject(res);
+                    res = JsonConvert.SerializeObject(obj, Formatting.Indented);
+                });
+            }
+            catch (Exception ex)
+            {
+                var md = new MessageDialog(ex.Message, "API Request Error");
+                await md.ShowAsync();
+                return;
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void summaries_Click(object sender, RoutedEventArgs e)
         {
-            var res = await MakeRequestAsync("me/summaries/Daily", 
-                string.Format("startTime={0}", DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")));
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await MakeRequestAsync("me/summaries/Daily",
+                    string.Format("startTime={0}", DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")));
+                // Format the JSON string
+                await Task.Run(() =>
+                {
+                    var obj = JsonConvert.DeserializeObject(res);
+                    res = JsonConvert.SerializeObject(obj, Formatting.Indented);
+                });
+            }
+            catch (Exception ex)
+            {
+                var md = new MessageDialog(ex.Message, "API Request Error");
+                await md.ShowAsync();
+                return;
+            }
 
-            // Format the JSON string
-            var obj = JsonConvert.DeserializeObject(res);
-            res = JsonConvert.SerializeObject(obj, Formatting.Indented);
-            TextDisplay.Text = res;
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async Task<string> GetActivity(string activity)
         {
-            var res = await MakeRequestAsync("me/Activities/",
-                string.Format("startTime={0}&endTime={1}&activityTypes={2}&ActivityIncludes=Details",
-                DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
-                activity));
+            string res = string.Empty;
+            try
+            {
+                res = await MakeRequestAsync("me/Activities/",
+                    string.Format("startTime={0}&endTime={1}&activityTypes={2}&ActivityIncludes=Details",
+                    DateTime.Now.AddYears(-1).ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                    DateTime.Now.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"),
+                    activity));
+            }
+            catch (Exception ex)
+            {
+                var md = new MessageDialog(ex.Message, "API Request Error");
+                await md.ShowAsync();
+                return res;
+            }
 
             await Task.Run(() =>
             {
@@ -274,32 +343,86 @@ namespace MSHealthAPIClient
 
         private async void SleepActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("Sleep");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("Sleep");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void FreePlayActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("FreePlay");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("FreePlay");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void GuidedWorkoutActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("GuidedWorkout");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("GuidedWorkout");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void BikeActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("Bike");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("Bike");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void GolfActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("Golf");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("Golf");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
 
         private async void RunActivityClick(object sender, RoutedEventArgs e)
         {
-            TextDisplay.Text = await GetActivity("Run");
+            string res = TextDisplay.Text;
+            TextDisplay.Text = "Loading...";
+            try
+            {
+                res = await GetActivity("Run");
+            }
+            finally
+            {
+                TextDisplay.Text = res;
+            }
         }
     }
 }
