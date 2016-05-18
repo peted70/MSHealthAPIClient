@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,6 @@ namespace MSHealthAPIClient
         private const string RedirectUri = "https://login.live.com/oauth20_desktop.srf";
 
         private static string ClientId = string.Empty;
-        private static string ClientSecret = string.Empty;
 
         private const string ClientAppResourceName = "MSHealthClientId";
         private const string ResourceName = "MSHealthOauthToken";
@@ -46,10 +46,7 @@ namespace MSHealthAPIClient
             var query = new StringBuilder();
 
             query.AppendFormat("redirect_uri={0}", Uri.EscapeUriString(RedirectUri));
-
             query.AppendFormat("&client_id={0}", Uri.EscapeUriString(ClientId));
-            query.AppendFormat("&client_secret={0}", Uri.EscapeUriString(ClientSecret));
-
             query.AppendFormat("&scope={0}", Uri.EscapeUriString(Scopes));
             query.Append("&response_type=code");
 
@@ -64,7 +61,6 @@ namespace MSHealthAPIClient
 
             query.AppendFormat("redirect_uri={0}", Uri.EscapeUriString(RedirectUri));
             query.AppendFormat("&client_id={0}", Uri.EscapeUriString(ClientId));
-            query.AppendFormat("&client_secret={0}", Uri.EscapeUriString(ClientSecret));
 
             string grant = "authorization_code";
             if (!string.IsNullOrEmpty(refreshToken))
@@ -94,15 +90,12 @@ namespace MSHealthAPIClient
                 if (cdr == ContentDialogResult.Primary)
                 {
                     ClientId = ClientIdInput.Text;
-                    ClientSecret = ClientSecretInput.Text;
-
-                    AddTokenToVault(ClientAppResourceName, ClientId, ClientSecret);
+                    AddTokenToVault(ClientAppResourceName, ClientId, "xxx");
                 }
             }
             else
             {
                 ClientId = appCredentials.Item1;
-                ClientSecret = appCredentials.Item2;
             }
         }
 
@@ -174,10 +167,13 @@ namespace MSHealthAPIClient
             if (!string.IsNullOrEmpty(token.Item2))
                 return token.Item2;
 
+            var OAuthRequestUri = CreateOAuthCodeRequestUri();
+            Debug.WriteLine($"OAuth request URI = {OAuthRequestUri}");
+
             // want to get SSO behaviour here but if I use the app callback URI it uses SSO but WAB never
             // returns
             var ar = await WebAuthenticationBroker.AuthenticateAsync(WebAuthenticationOptions.None,
-                CreateOAuthCodeRequestUri(),
+                OAuthRequestUri,
                 new Uri("https://login.live.com/oauth20_desktop.srf"));
 
             var rs = ar.ResponseStatus;
@@ -200,14 +196,18 @@ namespace MSHealthAPIClient
         private async Task<string> GetAndSecurelyStoreAuthTokensFromAuthCode(string code)
         {
             var tokenUri = CreateOAuthTokenRequestUri(code);
+            Debug.WriteLine($"Token Request Uri = {tokenUri}");
 
             var http = new HttpClient();
-            var resp = await http.GetAsync(tokenUri);
+            var resp = await http.GetAsync(tokenUri); 
             var result = await resp.Content.ReadAsStringAsync();
 
             var value = JsonValue.Parse(result).GetObject();
             var authToken = value.GetNamedValue("access_token").ToString();
             var refreshToken = value.GetNamedValue("refresh_token").ToString();
+
+            Debug.WriteLine($"Auth Token = {authToken}");
+            Debug.WriteLine($"Refresh Token = {refreshToken}");
 
             AddTokenToVault(ResourceName, UserName, authToken);
             AddTokenToVault(RefreshResourceName, UserName, refreshToken);

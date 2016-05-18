@@ -68,26 +68,8 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="Client ID: " Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Margin="4"></TextBlock>
                     <TextBox Grid.Row="0" Grid.Column="1"  HorizontalAlignment="Stretch" x:Name="ClientIdInput" Margin="4"></TextBox>
-                    <TextBlock Text="Client Secret: " Grid.Row="1" Grid.Column="0" Margin="4"></TextBlock>
-                    <TextBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" x:Name="ClientSecretInput" Margin="4"></TextBox>
                 </Grid>
                 
-                <!--<Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Client ID: "></TextBlock>
-                    <TextBox Grid.Column="1"  HorizontalAlignment="Stretch" x:Name="ClientIdInput"></TextBox>
-                </Grid>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Client Secret: "></TextBlock>
-                    <TextBox Grid.Column="1" HorizontalAlignment="Stretch" x:Name="ClientSecretInput"></TextBox>
-                </Grid>-->
                 <RichTextBlock TextAlignment="Left" TextWrapping="Wrap" TextTrimming="CharacterEllipsis">
                     <Paragraph>
                         <Run>Add the values here for your app (to set up your app go to </Run>
